@@ -233,10 +233,10 @@ export default function SurvivalCheck() {
                 </p>
               </div>
               <div className="space-y-4">
-                <h3 className="font-medium text-zinc-300">Claim your survival reward:</h3>
+                <h3 className="font-medium text-zinc-300">Toh kya vichaar hai aapke 👀?</h3>
                 <div className="grid grid-cols-1 gap-3">
                   <button onClick={() => { setAnswers({ ...answers, reward: "Coffee/Shakes" }); setStep(9); }} className="w-full text-center bg-zinc-100 text-zinc-900 hover:bg-zinc-300 font-medium rounded-lg p-4 transition-all">
-                    Thick Cold Coffee / Shakes
+                    Thick Cold Coffee / Shakes / Barf-Gola
                   </button>
                   <button onClick={() => { setAnswers({ ...answers, reward: "Ice Cream" }); setStep(9); }} className="w-full text-center bg-zinc-900 border border-zinc-800 hover:border-emerald-500 rounded-lg p-4 transition-all">
                     Ice Cream to beat the heat
