@@ -1,87 +1,90 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Loader2, Lock, Unlock, CheckCircle2, Flame, AlertTriangle, ScrollText, CalendarClock } from "lucide-react";
 import { saveResponses } from "./actions";
 
-// --- HIGH-DENSITY SWAYING EMOJIS BACKGROUND (Including Cats!) ---
+// --- OPTIMIZED PURE CSS EMOJI BACKGROUND ---
 const FloatingEmojis = () => {
-  // Added cat emojis to the mix! 🐱🐈😻🐾
   const emojiSourceList = ["🌸", "✨", "🦋", "💖", "☕", "🐱", "🐈", "🍦", "💫", "😻", "🌈", "🐾"];
 
-  // High number for "dense" feel.
-  const emojiCount = 70;
+  // Reduced slightly for mobile performance, but CSS makes it much smoother
+  const emojiCount = 45;
 
-  // useMemo ensures these random values are only generated once on mount
   const generatedEmojiData = useMemo(() => {
     return Array.from({ length: emojiCount }).map((_, i) => {
-      // Base horizontal position (0% to 100% of screen width)
       const baseLeft = Math.random() * 100;
-      // How far it will sway left and right during ascent (5vw to 15vw)
-      const swayAmplitude = 5 + Math.random() * 10;
 
       return {
         emoji: emojiSourceList[Math.floor(Math.random() * emojiSourceList.length)],
-        // Random sizes for depth
-        size: ["text-lg", "text-xl", "text-2xl", "text-3xl", "text-4xl"][Math.floor(Math.random() * 5)],
-
-        // Base positioning
+        size: ["text-lg", "text-xl", "text-2xl", "text-3xl"][Math.floor(Math.random() * 4)],
         initialLeft: `${baseLeft}vw`,
 
-        // Vertical movement (rise) config
-        riseDuration: 12 + Math.random() * 18, // 12s to 30s climb (slightly faster)
-        delay: Math.random() * -20, // Negative delay makes them start at different heights immediately on load
-
-        // Horizontal sway (moving left and right) config
-        swayDuration: 3 + Math.random() * 4, // 3s to 7s per sway cycle
-        animateX: [`-${swayAmplitude}vw`, `${swayAmplitude}vw`], // sway path relative to base position
+        // CSS Animation properties
+        animationDuration: `${12 + Math.random() * 15}s`, // Float duration
+        animationDelay: `-${Math.random() * 20}s`, // Start staggered
+        swayDuration: `${3 + Math.random() * 4}s`, // Sway duration
+        swayDelay: `-${Math.random() * 5}s`, // Sway staggered
       };
     });
   }, []);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {generatedEmojiData.map((item, index) => (
-        <motion.div
-          key={index}
-          className={`absolute ${item.size} z-0 opacity-0`}
-          style={{ left: item.initialLeft }} // base horizontal anchor
-          initial={{ y: "110vh", opacity: 0, rotate: 0 }}
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+      {/* Injecting CSS Keyframes directly for performance */}
+      <style jsx>{`
+        @keyframes floatUp {
+          0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+          10% { opacity: 0.6; }
+          90% { opacity: 0.6; }
+          100% { transform: translateY(-15vh) rotate(360deg); opacity: 0; }
+        }
+        @keyframes sway {
+          0%, 100% { transform: translateX(-20px); }
+          50% { transform: translateX(20px); }
+        }
+        .emoji-container {
+          position: absolute;
+          animation-name: floatUp;
+          animation-timing-function: linear;
+          animation-iteration-count: infinite;
+          opacity: 0; /* Starts hidden until animation kicks in */
+        }
+        .emoji-sway {
+          animation-name: sway;
+          animation-timing-function: ease-in-out;
+          animation-iteration-count: infinite;
+        }
+      `}</style>
 
-          // Applying multiple concurrent animations (Rise, Fade, Rotate)
-          animate={{
-            y: "-15vh", // Rise to above screen
-            opacity: [0, 0.6, 0.6, 0], // Quick fade in, hold, fade out at top
-            rotate: 360 * (Math.random() > 0.5 ? 1 : -1) // Spin randomly
-          }}
-          transition={{
-            y: { duration: item.riseDuration, repeat: Infinity, delay: item.delay, ease: "linear" },
-            opacity: { duration: item.riseDuration, repeat: Infinity, delay: item.delay, ease: "linear" },
-            rotate: { duration: item.riseDuration, repeat: Infinity, delay: item.delay, ease: "linear" }
+      {generatedEmojiData.map((item, index) => (
+        <div
+          key={index}
+          className={`emoji-container ${item.size}`}
+          style={{
+            left: item.initialLeft,
+            animationDuration: item.animationDuration,
+            animationDelay: item.animationDelay,
           }}
         >
-          {/* Internal motion div handles the horizontal left/right sway independent of rising */}
-          <motion.div
-            animate={{ x: item.animateX }}
-            transition={{
-              duration: item.swayDuration,
-              repeat: Infinity,
-              repeatType: "mirror", // Wobble back and forth
-              ease: "easeInOut", // Smooth turn at ends
-              delay: Math.random() * 5 // random phase start for sway
+          <div
+            className="emoji-sway"
+            style={{
+              animationDuration: item.swayDuration,
+              animationDelay: item.swayDelay,
             }}
           >
             {item.emoji}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       ))}
     </div>
   );
 };
 
 // --- FRAMER MOTION COMPONENT VARIANTS ---
-const pageVariants: import("framer-motion").Variants = {
+const pageVariants: Variants = {
   initial: { opacity: 0, y: 15, scale: 0.98 },
   animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
   exit: { opacity: 0, y: -15, scale: 0.98, transition: { duration: 0.3, ease: "easeIn" } },
@@ -133,7 +136,7 @@ export default function SurvivalCheck() {
   };
 
   const handleWhatsAppRedirect = (timeChoice: string) => {
-    const PHONE_NUMBER = "917857825881"; // Restored original number
+    const PHONE_NUMBER = "917857825881";
     const message = `*${timeChoice}*`;
     const whatsappUrl = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
 
@@ -156,10 +159,10 @@ export default function SurvivalCheck() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-pink-100 via-rose-50 to-pink-200 text-slate-800 flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
 
-      {/* Background Floating/Swaying Animations (Starts immediately on load) */}
+      {/* Optimized Background Floating/Swaying Animations */}
       <FloatingEmojis />
 
-      {/* Main Content Card (Z-index ensures it sits above emojis) */}
+      {/* Main Content Card */}
       <motion.div
         className="max-w-md w-full bg-white/70 backdrop-blur-xl border border-pink-100 rounded-3xl shadow-lg p-6 sm:p-8 z-10 relative"
         initial={{ y: 20, opacity: 0 }}
@@ -181,7 +184,7 @@ export default function SurvivalCheck() {
 
         <AnimatePresence mode="wait">
 
-          {/* STEP 0: SECURITY (First Page - Emojis float behind this now) */}
+          {/* STEP 0: SECURITY */}
           {step === 0 && (
             <motion.div key="step0" variants={pageVariants} initial="initial" animate="animate" exit="exit" className="space-y-6">
               <div className="flex flex-col items-center justify-center space-y-4 mb-8">
@@ -273,7 +276,7 @@ export default function SurvivalCheck() {
               </div>
               <div className="space-y-3">
                 {["Anxiety ekdum peak pe hai", "Bhagwan bharose chhod diye hain ab", "Exam shift hua toh yahin baith ke roungi"].map((option, idx) => (
-                  <motion.button whileHover={{ scale: 1.02, backgroundColor: "rgba(ffe4e6, 0.5)" }} whileTap={{ scale: 0.98 }} key={idx} onClick={() => { setAnswers({ ...answers, q3: option }); setStep(4); }} className="w-full text-left bg-white border-2 border-pink-100 text-slate-700 font-medium rounded-2xl p-4 transition-colors shadow-sm">
+                  <motion.button whileHover={{ scale: 1.02, backgroundColor: "rgba(255, 228, 230, 0.5)" }} whileTap={{ scale: 0.98 }} key={idx} onClick={() => { setAnswers({ ...answers, q3: option }); setStep(4); }} className="w-full text-left bg-white border-2 border-pink-100 text-slate-700 font-medium rounded-2xl p-4 transition-colors shadow-sm">
                     {option}
                   </motion.button>
                 ))}
@@ -312,7 +315,7 @@ export default function SurvivalCheck() {
               </div>
               <div className="space-y-3">
                 {["Haan, ek hai...", "Nahi mitarr, bas padhai (aur thoda rona)", "Top Secret hai, system ko nahi bataungi"].map((option, idx) => (
-                  <motion.button whileHover={{ scale: 1.02, backgroundColor: "rgba(fae8ff, 0.5)" }} whileTap={{ scale: 0.98 }} key={idx} onClick={() => { setAnswers({ ...answers, q5: option }); setStep(6); }} className="w-full text-left bg-white border-2 border-pink-100 text-slate-700 font-medium rounded-2xl p-4 transition-colors shadow-sm">
+                  <motion.button whileHover={{ scale: 1.02, backgroundColor: "rgba(250, 232, 255, 0.5)" }} whileTap={{ scale: 0.98 }} key={idx} onClick={() => { setAnswers({ ...answers, q5: option }); setStep(6); }} className="w-full text-left bg-white border-2 border-pink-100 text-slate-700 font-medium rounded-2xl p-4 transition-colors shadow-sm">
                     {option}
                   </motion.button>
                 ))}
@@ -360,7 +363,7 @@ export default function SurvivalCheck() {
                   </motion.button>
 
                   {/* COOKING OPTION */}
-                  <motion.button whileHover={{ scale: 1.02, backgroundColor: "rgba(ffe4e6, 0.8)" }} whileTap={{ scale: 0.98 }} onClick={() => { setAnswers({ ...answers, reward: "Aditya Cooks" }); setStep(8); }} className="w-full text-center bg-rose-50 border-2 border-rose-200 text-rose-600 font-bold rounded-2xl p-4 transition-colors mt-2 shadow-sm order- rose-200 hover:border-rose-400 hover:bg-rose-100 text-rose-600 font-bold rounded-2xl p-4 transition-colors mt-2 shadow-sm">
+                  <motion.button whileHover={{ scale: 1.02, backgroundColor: "rgba(255, 228, 230, 0.8)" }} whileTap={{ scale: 0.98 }} onClick={() => { setAnswers({ ...answers, reward: "Aditya Cooks" }); setStep(8); }} className="w-full text-center bg-rose-50 border-2 border-rose-200 text-rose-600 font-bold rounded-2xl p-4 transition-colors mt-2 shadow-sm">
                     Ya fir, mai kuch cook karu aapke liye? 👨‍🍳
                   </motion.button>
                 </div>
@@ -423,7 +426,7 @@ export default function SurvivalCheck() {
                 <motion.div
                   animate={{ y: [0, -15, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                  className="bg-pink-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border-2 border-pink-200"
+                  className="bg-pink-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border-2 border-pink-200"
                 >
                   <CheckCircle2 className="w-12 h-12 text-pink-500" />
                 </motion.div>
