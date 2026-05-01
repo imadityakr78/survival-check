@@ -272,7 +272,7 @@ export default function SurvivalCheck() {
                   </motion.div>
                   Anxiety Module
                 </span>
-                <h2 className="text-2xl font-bold text-slate-800 leading-snug">Ticket 21 ka Motihari ka ban gaya hai, par exams 16-22 ke beech hain. Kitna dar lag raha hai?</h2>
+                <h2 className="text-2xl font-bold text-slate-800 leading-snug">Ticket 21 ka Motihari ka ban gaya hai, par Az900 exams 16-22 ke beech hain. Kitna dar lag raha hai?</h2>
               </div>
               <div className="space-y-3">
                 {["Anxiety ekdum peak pe hai", "Bhagwan bharose chhod diye hain ab", "Exam shift hua toh yahin baith ke roungi"].map((option, idx) => (
